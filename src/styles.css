@@ -1,0 +1,283 @@
+import { useMemo, useState } from 'react';
+
+const demoUsers = [
+  { email: 'demo@estateflow.com', password: '123456', name: 'Aman Verma' },
+  { email: 'admin@estateflow.com', password: 'admin123', name: 'Admin User' }
+];
+
+const projects = [
+  {
+    id: 1,
+    title: 'Skyline Residences',
+    location: 'Bangalore, India',
+    price: '₹94 Lakh',
+    type: 'Apartment',
+    status: 'Available',
+    beds: 3,
+    baths: 2,
+    area: '1450 sq ft',
+    image:
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80'
+  },
+  {
+    id: 2,
+    title: 'Green Valley Homes',
+    location: 'Pune, India',
+    price: '₹1.8 Cr',
+    type: 'Villa',
+    status: 'Featured',
+    beds: 4,
+    baths: 3,
+    area: '2200 sq ft',
+    image:
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80'
+  },
+  {
+    id: 3,
+    title: 'Harbor View Plaza',
+    location: 'Mumbai, India',
+    price: '₹2.4 Cr',
+    type: 'Penthouse',
+    status: 'New',
+    beds: 5,
+    baths: 4,
+    area: '3100 sq ft',
+    image:
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80'
+  },
+  {
+    id: 4,
+    title: 'Lakefront Court',
+    location: 'Hyderabad, India',
+    price: '₹68 Lakh',
+    type: 'Flat',
+    status: 'Available',
+    beds: 2,
+    baths: 2,
+    area: '980 sq ft',
+    image:
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80'
+  },
+  {
+    id: 5,
+    title: 'Royal Park Residency',
+    location: 'Noida, India',
+    price: '₹1.1 Cr',
+    type: 'Apartment',
+    status: 'Popular',
+    beds: 3,
+    baths: 2,
+    area: '1320 sq ft',
+    image:
+      'https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=900&q=80'
+  },
+  {
+    id: 6,
+    title: 'Sunset Heights',
+    location: 'Ahmedabad, India',
+    price: '₹87 Lakh',
+    type: 'Condo',
+    status: 'Hot Deal',
+    beds: 2,
+    baths: 2,
+    area: '1040 sq ft',
+    image:
+      'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=900&q=80'
+  }
+];
+
+function App() {
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem('estateflow-user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('All');
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      const matchesSearch =
+        project.title.toLowerCase().includes(search.toLowerCase()) ||
+        project.location.toLowerCase().includes(search.toLowerCase());
+
+      const matchesType = selectedType === 'All' || project.type === selectedType;
+
+      return matchesSearch && matchesType;
+    });
+  }, [search, selectedType]);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+
+    const user = demoUsers.find(
+      (item) =>
+        item.email.toLowerCase() === formData.email.toLowerCase() &&
+        item.password === formData.password
+    );
+
+    if (!user) {
+      setError('Invalid email or password. Try demo@estateflow.com / 123456');
+      return;
+    }
+
+    setCurrentUser(user);
+    localStorage.setItem('estateflow-user', JSON.stringify(user));
+    setError('');
+    setFormData({ email: '', password: '' });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('estateflow-user');
+  };
+
+  const types = ['All', ...new Set(projects.map((project) => project.type))];
+
+  if (!currentUser) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <div className="brand-wrap">
+            <div className="brand-icon">E</div>
+            <div>
+              <p className="eyebrow">Smart Property Platform</p>
+              <h1>EstateFlow</h1>
+            </div>
+          </div>
+
+          <h2>Login to your account</h2>
+          <p className="subtitle">Access premium listings, market insights, and saved projects.</p>
+
+          <form onSubmit={handleLogin} className="login-form">
+            <label>
+              Email
+              <input
+                type="email"
+                name="email"
+                placeholder="demo@estateflow.com"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+
+            <label>
+              Password
+              <input
+                type="password"
+                name="password"
+                placeholder="123456"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+
+            {error && <div className="error-box">{error}</div>}
+
+            <button type="submit" className="primary-btn">Login</button>
+          </form>
+
+          <div className="demo-box">
+            <span>Demo login:</span>
+            <strong>demo@estateflow.com</strong>
+            <strong>123456</strong>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">Welcome back</p>
+          <h2>{currentUser.name}</h2>
+        </div>
+
+        <button className="secondary-btn" onClick={handleLogout}>Logout</button>
+      </header>
+
+      <section className="hero">
+        <div>
+          <p className="eyebrow">Portfolio Overview</p>
+          <h1>Find the right place to live and invest.</h1>
+        </div>
+
+        <div className="stats-grid">
+          <div className="stat-card">
+            <span>Total Projects</span>
+            <strong>{projects.length}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Available</span>
+            <strong>{projects.filter((item) => item.status === 'Available').length}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Featured</span>
+            <strong>{projects.filter((item) => item.status === 'Featured').length}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="filters">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by city or property name..."
+        />
+
+        <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
+          {types.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </section>
+
+      <section className="projects-grid">
+        {filteredProjects.map((project) => (
+          <article key={project.id} className="project-card">
+            <img src={project.image} alt={project.title} />
+
+            <div className="project-body">
+              <div className="project-header">
+                <div>
+                  <h3>{project.title}</h3>
+                  <p>{project.location}</p>
+                </div>
+                <span className="badge">{project.status}</span>
+              </div>
+
+              <div className="project-price">{project.price}</div>
+
+              <div className="meta-row">
+                <span>{project.beds} Beds</span>
+                <span>{project.baths} Baths</span>
+                <span>{project.area}</span>
+              </div>
+
+              <div className="project-footer">
+                <span className="type-tag">{project.type}</span>
+                <button className="view-btn">View Details</button>
+              </div>
+            </div>
+          </article>
+        ))}
+      </section>
+    </div>
+  );
+}
+
+export default App;
